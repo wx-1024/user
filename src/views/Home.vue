@@ -74,12 +74,13 @@
                 @click="goToHeroLink"
                 class="inline-flex items-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-gray-900 transition hover:scale-105"
               >
-                {{ t('home.hero.cta') }}
+                {{ heroPrimaryButtonText }}
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
               </button>
               <router-link
+                v-if="!hasHeroLink"
                 to="/products"
                 class="inline-flex items-center rounded-lg border border-white/30 px-5 py-3 text-sm font-medium text-white transition hover:border-white hover:bg-white/10"
               >
@@ -111,7 +112,8 @@
             <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">{{ t('home.featured.description') }}</p>
           </div>
           <router-link
-            to="/products"
+                v-if="!hasHeroLink"
+                to="/products"
             class="text-sm font-semibold text-gray-700 transition hover:text-black dark:text-gray-300 dark:hover:text-white"
           >
             {{ t('home.featured.viewAll') }}
@@ -409,6 +411,17 @@ const heroLink = computed(() => {
   const banner = heroBanner.value
   if (!banner || banner.link_type === 'none') return ''
   return banner.link_value || ''
+})
+
+const hasHeroLink = computed(() => heroLink.value.trim().length > 0)
+
+const heroPrimaryButtonText = computed(() => {
+  if (!hasHeroLink.value) return t('home.hero.cta')
+  const linkType = String(heroBanner.value?.link_type || '').toLowerCase()
+  if (linkType === 'external') {
+    return t('common.learnMore')
+  }
+  return t('common.viewDetails')
 })
 
 const heroOpenInNewTab = computed(() => Boolean(heroBanner.value?.open_in_new_tab))

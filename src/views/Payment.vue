@@ -867,6 +867,22 @@ const captureStripeIfNeeded = async () => {
   }
 }
 
+const syncEpayReturnIfNeeded = async () => {
+  const returnFlag = String(route.query.epay_return || '').toLowerCase()
+  if (returnFlag !== '1') return
+  if (!orderNoQuery.value) return
+
+  try {
+    await debouncedLoadOrder({ silent: true })
+    await loadLatestPayment()
+  } finally {
+    await router.replace({
+      path: route.path,
+      query: buildPayRouteQuery(),
+    })
+  }
+}
+
 const performPayment = async () => {
   error.value = ''
   if (!orderId.value || !selectedChannelId.value) {
@@ -1061,10 +1077,11 @@ watch(
 )
 
 watch(
-  () => [paymentResult.value?.payment_id, route.query.pp_return, route.query.token, route.query.payer_id, route.query.PayerID, route.query.stripe_return, route.query.session_id, order.value?.status],
+  () => [paymentResult.value?.payment_id, route.query.pp_return, route.query.token, route.query.payer_id, route.query.PayerID, route.query.stripe_return, route.query.session_id, route.query.epay_return, order.value?.status],
   () => {
     void capturePaypalIfNeeded()
     void captureStripeIfNeeded()
+    void syncEpayReturnIfNeeded()
   },
   { immediate: true }
 )
